@@ -88,6 +88,39 @@
           }
         }
       }
+    },
+    "aap-ui-kit": {
+      "projectType": "library",
+      "root": "projects/aap-ui-kit",
+      "sourceRoot": "projects/aap-ui-kit/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/aap-ui-kit/ng-package.json",
+            "tsConfig": "projects/aap-ui-kit/tsconfig.lib.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/aap-ui-kit/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/aap-ui-kit/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "tsConfig": "projects/aap-ui-kit/tsconfig.spec.json",
+            "main": "projects/aap-ui-kit/src/test.ts",
+            "karmaConfig": "projects/aap-ui-kit/karma.conf.js",
+            "polyfills": ["zone.js", "zone.js/testing"]
+          }
+        }
+      }
     }
   },
   "cli": {
