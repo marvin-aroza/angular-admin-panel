@@ -7,8 +7,6 @@ on:
 jobs:
   install:
     runs-on: ubuntu-latest
-    outputs:
-      node-modules-cache-key: ${{ steps.cache-node-modules.outputs.cache-key }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,5 +67,14 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
+      - name: Storybook test
+        run: npm run test-storybook
+
       - name: aap-ui-kit test
         run: npx ng test aap-ui-kit --watch=false --browsers=ChromeHeadless
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
