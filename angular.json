@@ -26,7 +26,9 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"],
+            "styles": [
+              "src/styles.scss"
+            ],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "ssr": {
@@ -84,7 +86,9 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": [
+              "src/styles.scss"
+            ]
           }
         }
       }
@@ -117,7 +121,40 @@
             "tsConfig": "projects/aap-ui-kit/tsconfig.spec.json",
             "main": "projects/aap-ui-kit/src/test.ts",
             "karmaConfig": "projects/aap-ui-kit/karma.conf.js",
-            "polyfills": ["zone.js", "zone.js/testing"]
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        },
+        "storybook": {
+          "builder": "@storybook/angular:start-storybook",
+          "options": {
+            "configDir": "projects/aap-ui-kit/.storybook",
+            "browserTarget": "aap-ui-kit:build",
+            "compodoc": true,
+            "compodocArgs": [
+              "-e",
+              "json",
+              "-d",
+              "projects/aap-ui-kit"
+            ],
+            "port": 6006
+          }
+        },
+        "build-storybook": {
+          "builder": "@storybook/angular:build-storybook",
+          "options": {
+            "configDir": "projects/aap-ui-kit/.storybook",
+            "browserTarget": "aap-ui-kit:build",
+            "compodoc": true,
+            "compodocArgs": [
+              "-e",
+              "json",
+              "-d",
+              "projects/aap-ui-kit"
+            ],
+            "outputDir": "dist/storybook/aap-ui-kit"
           }
         }
       }
