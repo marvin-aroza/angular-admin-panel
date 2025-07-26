@@ -97,6 +97,10 @@
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "projects/aap-ui-kit/ng-package.json",
+            "tsConfig": "projects/aap-ui-kit/tsconfig.lib.json"
+          },
           "configurations": {
             "production": {
               "tsConfig": "projects/aap-ui-kit/tsconfig.lib.prod.json"
