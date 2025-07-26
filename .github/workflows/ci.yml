@@ -58,6 +58,9 @@ jobs:
       - name: Angular test
         run: npm run test -- --watch=false --browsers=ChromeHeadless
 
+      - name: Coverage report
+        run: npx nyc report --reporter=lcov -t coverage/angular-admin-panel --report-dir coverage/angular-admin-panel
+
       - name: Start Storybook
         run: npm run storybook -- --port 6006 &
 
@@ -73,8 +76,18 @@ jobs:
       - name: aap-ui-kit test
         run: npx ng test aap-ui-kit --watch=false --browsers=ChromeHeadless
 
-      - name: Upload coverage report
+      - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage/
+
+      - name: Generate Markdown from Coverage
+        run: |
+          npm install -g markdown-coverage-report
+          npx markdown-coverage-report -p coverage/angular-admin-panel/lcov.info -o coverage-table.md
+
+      - name: Comment PR with Coverage Table
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: coverage-table.md
