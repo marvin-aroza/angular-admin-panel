@@ -10,7 +10,10 @@
     "serve:ssr:angular-admin-panel": "node dist/angular-admin-panel/server/server.mjs",
     "lint": "ng lint",
     "storybook": "ng run aap-ui-kit:storybook",
-    "storybook:build": "ng run aap-ui-kit:build-storybook"
+    "storybook:build": "ng run aap-ui-kit:build-storybook",
+    "build-storybook": "ng run aap-ui-kit:build-storybook",
+    "test-storybook": "test-storybook --config-dir=projects/aap-ui-kit/.storybook --url http://localhost:6006 -- --coverage --coverageDirectory=coverage/storybook && npx nyc report --reporter=lcov -t coverage/storybook --report-dir coverage/storybook",
+    "chromatic": "npx chromatic --project-token=chpt_53adbe95e81ce13 --build-script-name=storybook:build"
   },
   "prettier": {
     "overrides": [
@@ -42,9 +45,13 @@
     "@angular/compiler-cli": "^20.1.0",
     "@angular/platform-browser": "^20.1.3",
     "@angular/platform-browser-dynamic": "^20.1.3",
+    "@chromatic-com/storybook": "^4.0.1",
     "@compodoc/compodoc": "^1.1.26",
+    "@storybook/addon-a11y": "^9.0.18",
+    "@storybook/addon-coverage": "^2.0.0",
     "@storybook/addon-docs": "^9.0.18",
     "@storybook/angular": "^9.0.18",
+    "@storybook/test-runner": "^0.23.0",
     "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.19.9",
