@@ -3,6 +3,11 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "paths": {
+      "aap-ui-kit": [
+        "./dist/aap-ui-kit"
+      ]
+    },
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -33,6 +38,12 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/aap-ui-kit/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/aap-ui-kit/tsconfig.spec.json"
     }
   ]
 }
