@@ -71,6 +71,3 @@ jobs:
 
       - name: aap-ui-kit test
         run: npx ng test aap-ui-kit --watch=false --browsers=ChromeHeadless
-
-      - name: aap-ui-kit test
-        run: ng test aap-ui-kit
