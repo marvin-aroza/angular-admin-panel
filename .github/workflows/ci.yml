@@ -69,8 +69,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
-      - name: Storybook test
-        run: npm run test-storybook
+      - name: aap-ui-kit test
+        run: npx ng test aap-ui-kit --watch=false --browsers=ChromeHeadless
 
       - name: aap-ui-kit test
         run: ng test aap-ui-kit
