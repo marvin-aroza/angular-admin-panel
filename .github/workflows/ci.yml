@@ -84,8 +84,8 @@ jobs:
 
       - name: Generate Markdown from Coverage
         run: |
-          npm install -g markdown-coverage-report
-          npx markdown-coverage-report -p coverage/angular-admin-panel/lcov.info -o coverage-table.md
+          npm install -g lcov2md
+          lcov2md coverage/angular-admin-panel/lcov.info > coverage-table.md
 
       - name: Comment PR with Coverage Table
         uses: marocchino/sticky-pull-request-comment@v2
