@@ -82,11 +82,16 @@ jobs:
           name: coverage-report
           path: coverage/
 
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
       - name: Comment PR with Storybook Coverage
         uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          coverage-files: coverage/storybook/lcov.info
+          coverage-files: |
+            coverage/storybook/lcov.info
+            coverage/angular-admin-panel/lcov.info
           minimum-coverage: 80
           github-token: ${{ secrets.GITHUB_TOKEN }}
           update-comment: true
-          title: 🧪 Storybook Code Coverage
+          title-prefix: "🧪 Storybook Code Coverage"
