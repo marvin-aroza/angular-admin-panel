@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [develop, main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   install:
     runs-on: ubuntu-latest
@@ -88,7 +92,9 @@ jobs:
       - name: Comment PR with Storybook Coverage
         uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          coverage-files: coverage/storybook/lcov.info
+          coverage-files: |
+            coverage/storybook/lcov.info
+            coverage/angular-admin-panel/lcov.info
           minimum-coverage: 80
           github-token: ${{ secrets.GITHUB_TOKEN }}
           update-comment: true
