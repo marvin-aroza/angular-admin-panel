@@ -15,8 +15,8 @@ module.exports = function (config) {
     coverageReporter: {
       dir: require("path").join(__dirname, "../../coverage/aap-ui-kit/"),
       reporters: [
-        { type: "html" },
-        { type: "lcov" },
+        { type: "html", subdir: "." },
+        { type: "lcov", subdir: "." },
         { type: "text", subdir: ".", file: "text.txt" },
       ],
       check: {
@@ -33,7 +33,7 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ["ChromeHeadless"],
+    browsers: ["Chrome"],
     singleRun: false,
     restartOnFileChange: true,
   });
