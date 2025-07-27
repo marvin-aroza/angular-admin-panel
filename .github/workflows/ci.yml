@@ -82,12 +82,11 @@ jobs:
           name: coverage-report
           path: coverage/
 
-      - name: Generate Markdown from Coverage
-        run: |
-          npm install -g lcov2md
-          lcov2md coverage/angular-admin-panel/lcov.info > coverage-table.md
-
-      - name: Comment PR with Coverage Table
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Comment PR with Storybook Coverage
+        uses: zgosalvez/github-actions-report-lcov@v4
         with:
-          path: coverage-table.md
+          coverage-files: coverage/storybook/lcov.info
+          minimum-coverage: 80
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-comment: true
+          title: 🧪 Storybook Code Coverage
