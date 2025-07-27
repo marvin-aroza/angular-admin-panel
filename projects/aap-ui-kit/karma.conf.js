@@ -15,8 +15,8 @@ module.exports = function (config) {
     coverageReporter: {
       dir: require("path").join(__dirname, "../../coverage/aap-ui-kit/"),
       reporters: [
-        { type: "html", subdir: "report-html" },
-        { type: "lcov", subdir: "report-lcov" },
+        { type: "html" },
+        { type: "lcov" },
         { type: "text", subdir: ".", file: "text.txt" },
       ],
       check: {

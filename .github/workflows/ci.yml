@@ -94,7 +94,7 @@ jobs:
         with:
           coverage-files: |
             coverage/storybook/lcov.info
-            coverage/aap-ui-kit/report-lcov/lcov.info
+            coverage/aap-ui-kit/lcov.info
           minimum-coverage: 80
           github-token: ${{ secrets.GITHUB_TOKEN }}
           update-comment: true
