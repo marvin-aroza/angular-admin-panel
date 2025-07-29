@@ -4,11 +4,13 @@ on:
   pull_request:
     branches: [develop, main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   install:
     runs-on: ubuntu-latest
-    outputs:
-      node-modules-cache-key: ${{ steps.cache-node-modules.outputs.cache-key }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,6 +62,9 @@ jobs:
       - name: Angular test
         run: npm run test -- --watch=false --browsers=ChromeHeadless
 
+      - name: Coverage report
+        run: npx nyc report --reporter=lcov -t coverage/angular-admin-panel --report-dir coverage/angular-admin-panel
+
       - name: Start Storybook
         run: npm run storybook -- --port 6006 &
 
@@ -69,5 +74,26 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
+      - name: Storybook test
+        run: npm run test-storybook
+
       - name: aap-ui-kit test
         run: npx ng test aap-ui-kit --watch=false --browsers=ChromeHeadless
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Comment PR with Storybook Coverage
+        uses: zgosalvez/github-actions-report-lcov@v4
+        with:
+          coverage-files: coverage/storybook/lcov.info
+          minimum-coverage: 80
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-comment: true
+          title-prefix: "🧪 Storybook Code Coverage"

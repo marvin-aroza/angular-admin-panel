@@ -13,16 +13,27 @@ module.exports = function (config) {
       clearContext: false, // leave Jasmine output visible
     },
     coverageReporter: {
-      dir: require("path").join(__dirname, "../../coverage/aap-ui-kit"),
-      subdir: ".",
-      reporters: [{ type: "html" }, { type: "text-summary" }],
+      dir: require("path").join(__dirname, "../../coverage/aap-ui-kit/"),
+      reporters: [
+        { type: "html", subdir: "." },
+        { type: "lcov", subdir: "." },
+        { type: "text", subdir: ".", file: "text.txt" },
+      ],
+      check: {
+        global: {
+          statements: 90,
+          branches: 90,
+          functions: 90,
+          lines: 90,
+        },
+      },
     },
-    reporters: ["progress", "kjhtml"],
+    reporters: ["progress", "coverage"],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ["ChromeHeadless"],
+    browsers: ["Chrome"],
     singleRun: false,
     restartOnFileChange: true,
   });

@@ -5,32 +5,41 @@ module.exports = function (config) {
     plugins: [
       require("karma-jasmine"),
       require("karma-chrome-launcher"),
-      require("karma-coverage-istanbul-reporter"),
+      require("karma-coverage"),
       require("@angular-devkit/build-angular/plugins/karma"),
     ],
     client: {
       clearContext: false, // Leave Jasmine Spec Runner output visible in browser
     },
-    coverageIstanbulReporter: {
+    coverageReporter: {
       dir: require("path").join(__dirname, "./coverage/angular-admin-panel"),
-      reports: ["html", "lcovonly", "text-summary"],
-      fixWebpackSourcePaths: true,
-      thresholds: {
+      reporters: [
+        { type: "html", subdir: "report-html" },
+        { type: "lcov", subdir: "report-lcov" },
+        // reporters supporting the `file` property, use `subdir` to directly
+        // output them in the `dir` directory
+        { type: "cobertura", subdir: ".", file: "cobertura.txt" },
+        { type: "lcovonly", subdir: ".", file: "report-lcovonly.txt" },
+        { type: "teamcity", subdir: ".", file: "teamcity.txt" },
+        { type: "text", subdir: ".", file: "text.txt" },
+        { type: "text-summary", subdir: ".", file: "text-summary.txt" },
+      ],
+      check: {
         global: {
-          statements: 90, // Set minimum coverage for statements
-          branches: 90, // Set minimum coverage for branches
-          functions: 90, // Set minimum coverage for functions
-          lines: 90, // Set minimum coverage for lines
+          statements: 90,
+          branches: 90,
+          functions: 90,
+          lines: 90,
         },
       },
     },
-    reporters: ["progress", "coverage-istanbul"],
+    reporters: ["progress", "coverage"],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: ["Chrome"],
-    singleRun: false,
+    autoWatch: false,
+    browsers: ["ChromeHeadless"],
+    singleRun: true,
     restartOnFileChange: true,
   });
 };
