@@ -1,4 +1,4 @@
-name: Deploy Angular App to GitHub Pages
+name: Deploy Angular SSR Static to GitHub Pages
 
 on:
   push:
@@ -29,8 +29,8 @@ jobs:
       - name: Install Angular CLI
         run: npm install -g @angular/cli
 
-      - name: Build Angular app
-        run: ng build --output-path dist --base-href /${{ github.event.repository.name }}/
+      - name: Build SSR static site
+        run: npm run prerender # or ng run <project-name>:prerender
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
