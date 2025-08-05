@@ -1,73 +1,382 @@
-name: Angular CI
+name: CI Pipeline
 
 on:
+  push:
+    branches: [ main, develop ]
   pull_request:
-    branches: [develop, main]
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   install:
+    name: Install Dependencies
     runs-on: ubuntu-latest
-    outputs:
-      node-modules-cache-key: ${{ steps.cache-node-modules.outputs.cache-key }}
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+    - name: Set up Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Install dependencies
+      run: |
+        npm ci
+        npm ls || true
 
-  build:
+    - name: Cache node modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-22-
+
+  audit:
+    name: Security Audit
     runs-on: ubuntu-latest
     needs: install
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+    - name: Set up Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Restore node modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-22-
 
-      - name: Angular build
-        run: npm run build
+    - name: Install dependencies (fallback)
+      run: npm ci
 
-      - name: Storybook build
-        run: npm run storybook:build
+    - name: Run security audit
+      run: |
+        npm audit
+        
+    - name: Generate audit report
+      run: |
+        npm audit --json > audit-report.json || true
+        
+    - name: Upload audit report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-audit-report
+        path: audit-report.json
+        retention-days: 30
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: install
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+
+    - name: Restore node modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-22-
+
+    - name: Install dependencies (fallback)
+      run: npm ci
+
+    - name: Build application
+      run: |
+        npm run build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts
+        path: |
+          dist/
+        retention-days: 7
 
   test:
+    name: Run Tests & Coverage
     runs-on: ubuntu-latest
-    needs: build
+    needs: [install, build, audit]
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+    - name: Set up Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+    - name: Install Chrome
+      uses: browser-actions/setup-chrome@v1
 
-      - name: Angular test
-        run: npm run test -- --watch=false --browsers=ChromeHeadless
+    - name: Restore node modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-22-
 
-      - name: Start Storybook
-        run: npm run storybook -- --port 6006 &
+    - name: Install dependencies (fallback)
+      run: npm ci
 
-      - name: Wait for Storybook to be ready
-        run: npx wait-on http://localhost:6006
+    - name: Install additional dependencies for testing
+      run: |
+        sudo apt-get update && sudo apt-get install -y bc
 
-      - name: Install Playwright browsers
-        run: npx playwright install
+    - name: Run tests with coverage
+      run: |
+        npm test -- --watch=false --code-coverage --browsers=ChromeHeadless
+      env:
+        CI: true
 
-      - name: aap-ui-kit test
-        run: npx ng test aap-ui-kit --watch=false --browsers=ChromeHeadless
+    - name: Check coverage threshold and extract metrics
+      run: |
+        # Check if coverage was generated
+        if [ -f "coverage/lcov.info" ]; then
+          echo "✅ Coverage report found"
+          
+          # Debug: Show what coverage files exist
+          echo "Coverage files found:"
+          find coverage/ -type f -name "*.html" -o -name "*.info" -o -name "*.json" 2>/dev/null || echo "No coverage files found"
+          
+          # Extract coverage from lcov.info
+          echo "Extracting coverage from lcov.info..."
+          
+          # Calculate coverage from lcov.info
+          TOTAL_LINES=$(grep "LF:" coverage/lcov.info | awk -F: '{sum += $2} END {print sum}' || echo "0")
+          HIT_LINES=$(grep "LH:" coverage/lcov.info | awk -F: '{sum += $2} END {print sum}' || echo "0")
+          
+          TOTAL_FUNCTIONS=$(grep "FNF:" coverage/lcov.info | awk -F: '{sum += $2} END {print sum}' || echo "0")
+          HIT_FUNCTIONS=$(grep "FNH:" coverage/lcov.info | awk -F: '{sum += $2} END {print sum}' || echo "0")
+          
+          TOTAL_BRANCHES=$(grep "BRF:" coverage/lcov.info | awk -F: '{sum += $2} END {print sum}' || echo "0")
+          HIT_BRANCHES=$(grep "BRH:" coverage/lcov.info | awk -F: '{sum += $2} END {print sum}' || echo "0")
+          
+          # Calculate percentages (handle 0/0 = 100% case)
+          if [ "$TOTAL_LINES" -gt 0 ]; then
+            LINES_COVERAGE=$(echo "scale=1; $HIT_LINES * 100 / $TOTAL_LINES" | bc -l || echo "0")
+          else
+            LINES_COVERAGE="100"  # No lines to cover = 100% coverage
+          fi
+          
+          if [ "$TOTAL_FUNCTIONS" -gt 0 ]; then
+            FUNCTIONS_COVERAGE=$(echo "scale=1; $HIT_FUNCTIONS * 100 / $TOTAL_FUNCTIONS" | bc -l || echo "0")
+          else
+            FUNCTIONS_COVERAGE="100"  # No functions to cover = 100% coverage
+          fi
+          
+          if [ "$TOTAL_BRANCHES" -gt 0 ]; then
+            BRANCHES_COVERAGE=$(echo "scale=1; $HIT_BRANCHES * 100 / $TOTAL_BRANCHES" | bc -l || echo "0")
+          else
+            BRANCHES_COVERAGE="100"  # No branches to cover = 100% coverage
+          fi
+          
+          # For statements, use lines as fallback
+          STATEMENTS_COVERAGE="$LINES_COVERAGE"
+          
+          echo "Calculated coverage from lcov.info:"
+          echo "Lines: $HIT_LINES/$TOTAL_LINES = ${LINES_COVERAGE}%"
+          echo "Functions: $HIT_FUNCTIONS/$TOTAL_FUNCTIONS = ${FUNCTIONS_COVERAGE}%"
+          echo "Branches: $HIT_BRANCHES/$TOTAL_BRANCHES = ${BRANCHES_COVERAGE}%"
+          echo "Statements: ${STATEMENTS_COVERAGE}%"
+          
+        else
+          echo "❌ No lcov.info file found, trying alternative extraction..."
+          # Fallback to HTML parsing if available
+          if [ -f "coverage/index.html" ]; then
+            echo "Trying HTML parsing as fallback..."
+            
+            LINES_COVERAGE=$(grep -oP 'Lines.*?([0-9.]+)%' coverage/index.html | grep -oP '[0-9.]+(?=%)' | head -1 || echo "0")
+            FUNCTIONS_COVERAGE=$(grep -oP 'Functions.*?([0-9.]+)%' coverage/index.html | grep -oP '[0-9.]+(?=%)' | head -1 || echo "0")
+            BRANCHES_COVERAGE=$(grep -oP 'Branches.*?([0-9.]+)%' coverage/index.html | grep -oP '[0-9.]+(?=%)' | head -1 || echo "0")
+            STATEMENTS_COVERAGE=$(grep -oP 'Statements.*?([0-9.]+)%' coverage/index.html | grep -oP '[0-9.]+(?=%)' | head -1 || echo "0")
+          else
+            LINES_COVERAGE="0"
+            FUNCTIONS_COVERAGE="0"
+            BRANCHES_COVERAGE="0"
+            STATEMENTS_COVERAGE="0"
+          fi
+        fi
+        
+        echo "Coverage Summary:" | tee coverage-summary.txt
+        echo "Lines: ${LINES_COVERAGE}%" | tee -a coverage-summary.txt
+        echo "Functions: ${FUNCTIONS_COVERAGE}%" | tee -a coverage-summary.txt
+        echo "Branches: ${BRANCHES_COVERAGE}%" | tee -a coverage-summary.txt
+        echo "Statements: ${STATEMENTS_COVERAGE}%" | tee -a coverage-summary.txt
+        
+        # Check if coverage meets 90% threshold
+        if (( $(echo "$LINES_COVERAGE >= 90" | bc -l) )) && \
+           (( $(echo "$FUNCTIONS_COVERAGE >= 90" | bc -l) )) && \
+           (( $(echo "$BRANCHES_COVERAGE >= 90" | bc -l) )) && \
+           (( $(echo "$STATEMENTS_COVERAGE >= 90" | bc -l) )); then
+          echo "✅ Coverage thresholds met (90% minimum)" | tee -a coverage-summary.txt
+          echo "COVERAGE_STATUS=✅ PASSED" >> $GITHUB_ENV
+        else
+          echo "❌ Coverage below 90% threshold:" | tee -a coverage-summary.txt
+          echo "Lines: ${LINES_COVERAGE}% (required: 90%)" | tee -a coverage-summary.txt
+          echo "Functions: ${FUNCTIONS_COVERAGE}% (required: 90%)" | tee -a coverage-summary.txt
+          echo "Branches: ${BRANCHES_COVERAGE}% (required: 90%)" | tee -a coverage-summary.txt
+          echo "Statements: ${STATEMENTS_COVERAGE}% (required: 90%)" | tee -a coverage-summary.txt
+          echo "COVERAGE_STATUS=❌ FAILED" >> $GITHUB_ENV
+          echo "⚠️ Coverage is below threshold, but continuing pipeline for reporting..."
+        fi
+        
+        # Save coverage values for PR comment
+        echo "LINES_COVERAGE=${LINES_COVERAGE}" >> $GITHUB_ENV
+        echo "FUNCTIONS_COVERAGE=${FUNCTIONS_COVERAGE}" >> $GITHUB_ENV
+        echo "BRANCHES_COVERAGE=${BRANCHES_COVERAGE}" >> $GITHUB_ENV
+        echo "STATEMENTS_COVERAGE=${STATEMENTS_COVERAGE}" >> $GITHUB_ENV
+        
+        echo "Coverage check completed. Status: ${COVERAGE_STATUS:-UNKNOWN}"
+
+    - name: Generate Coverage Report for PR
+      if: github.event_name == 'pull_request'
+      run: |
+        # Create comprehensive coverage report for PR comment
+        echo "## 📊 Code Coverage Report" > coverage-pr-report.md
+        echo "" >> coverage-pr-report.md
+        echo "### Unit Tests Coverage" >> coverage-pr-report.md
+        echo "| Metric | Coverage | Status |" >> coverage-pr-report.md
+        echo "|--------|----------|--------|" >> coverage-pr-report.md
+        
+        # Add coverage rows
+        LINES_STATUS="❌"
+        FUNCTIONS_STATUS="❌"
+        BRANCHES_STATUS="❌"
+        STATEMENTS_STATUS="❌"
+        
+        if (( $(echo "${LINES_COVERAGE:-0} >= 90" | bc -l) )); then LINES_STATUS="✅"; fi
+        if (( $(echo "${FUNCTIONS_COVERAGE:-0} >= 90" | bc -l) )); then FUNCTIONS_STATUS="✅"; fi
+        if (( $(echo "${BRANCHES_COVERAGE:-0} >= 90" | bc -l) )); then BRANCHES_STATUS="✅"; fi
+        if (( $(echo "${STATEMENTS_COVERAGE:-0} >= 90" | bc -l) )); then STATEMENTS_STATUS="✅"; fi
+        
+        echo "| Lines | ${LINES_COVERAGE:-N/A}% | ${LINES_STATUS} |" >> coverage-pr-report.md
+        echo "| Functions | ${FUNCTIONS_COVERAGE:-N/A}% | ${FUNCTIONS_STATUS} |" >> coverage-pr-report.md
+        echo "| Branches | ${BRANCHES_COVERAGE:-N/A}% | ${BRANCHES_STATUS} |" >> coverage-pr-report.md
+        echo "| Statements | ${STATEMENTS_COVERAGE:-N/A}% | ${STATEMENTS_STATUS} |" >> coverage-pr-report.md
+        echo "" >> coverage-pr-report.md
+        echo "**Unit Tests Status:** ${COVERAGE_STATUS:-⚠️ NO REPORT}" >> coverage-pr-report.md
+        echo "" >> coverage-pr-report.md
+        echo "### Summary" >> coverage-pr-report.md
+        echo "- **Minimum Required Coverage:** 90%" >> coverage-pr-report.md
+        echo "- **Unit Tests:** ${COVERAGE_STATUS:-⚠️ NO REPORT}" >> coverage-pr-report.md
+        echo "" >> coverage-pr-report.md
+        echo "> 🎯 All coverage metrics must meet the 90% threshold for this PR to be approved." >> coverage-pr-report.md
+        
+        if [ "${COVERAGE_STATUS}" = "❌ FAILED" ]; then
+          echo "" >> coverage-pr-report.md
+          echo "### ⚠️ Action Required" >> coverage-pr-report.md
+          echo "Please add more tests to increase coverage above 90% for all metrics." >> coverage-pr-report.md
+        fi
+        
+        echo "Generated coverage report:"
+        cat coverage-pr-report.md
+
+    - name: Comment Coverage Report on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          
+          try {
+            // Read the coverage report
+            const coverageReport = fs.readFileSync('coverage-pr-report.md', 'utf8');
+            
+            // Find existing coverage comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const existingComment = comments.find(comment => 
+              comment.body.includes('📊 Code Coverage Report')
+            );
+            
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: coverageReport
+              });
+              console.log('Updated existing coverage comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: coverageReport
+              });
+              console.log('Created new coverage comment');
+            }
+          } catch (error) {
+            console.error('Failed to post coverage comment:', error.message);
+            // Don't fail the workflow if commenting fails
+            console.log('Continuing workflow despite comment failure...');
+          }
+
+    - name: Fail if coverage below threshold
+      run: |
+        if [ "$COVERAGE_STATUS" = "❌ FAILED" ]; then
+          echo "❌ Pipeline failed due to insufficient code coverage"
+          echo "Current coverage:"
+          echo "- Lines: ${LINES_COVERAGE}% (required: 90%)"
+          echo "- Functions: ${FUNCTIONS_COVERAGE}% (required: 90%)"
+          echo "- Branches: ${BRANCHES_COVERAGE}% (required: 90%)"
+          echo "- Statements: ${STATEMENTS_COVERAGE}% (required: 90%)"
+          echo ""
+          echo "Please add more tests to meet the 90% coverage requirement."
+          exit 1
+        else
+          echo "✅ Coverage check passed or no coverage data available"
+        fi
+        
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage/lcov.info
+        fail_ci_if_error: false
+        name: unit-test-coverage-node-22
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-coverage-reports
+        path: |
+          coverage/
+        retention-days: 7

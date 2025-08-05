@@ -30,7 +30,7 @@ jobs:
         run: npm install -g @angular/cli
 
       - name: Build SSR static site
-        run: ng run /${{ github.event.repository.name }}/:prerender
+        run: npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
