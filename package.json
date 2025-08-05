@@ -7,13 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:angular-admin-panel": "node dist/angular-admin-panel/server/server.mjs",
-    "lint": "ng lint",
-    "storybook": "ng run aap-ui-kit:storybook",
-    "storybook:build": "ng run aap-ui-kit:build-storybook",
-    "build-storybook": "ng run aap-ui-kit:build-storybook",
-    "test-storybook": "test-storybook --config-dir=projects/aap-ui-kit/.storybook --url http://localhost:6006 -- --coverage --coverageDirectory=coverage/storybook && npx nyc report --reporter=lcov -t coverage/storybook --report-dir coverage/storybook",
-    "chromatic": "npx chromatic --project-token=$CHROMATIC_PROJECT_TOKEN --build-script-name=storybook:build"
+    "test:ci": "ng test --watch=false --code-coverage --browsers=ChromeHeadless"
   },
   "prettier": {
     "overrides": [
@@ -27,53 +21,26 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/common": "^20.1.3",
-    "@angular/core": "^20.1.3",
+    "@angular/common": "^20.1.0",
+    "@angular/compiler": "^20.1.0",
+    "@angular/core": "^20.1.0",
     "@angular/forms": "^20.1.0",
-    "@angular/platform-server": "^20.1.0",
+    "@angular/platform-browser": "^20.1.0",
     "@angular/router": "^20.1.0",
-    "@angular/ssr": "^20.1.3",
-    "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^20.1.3",
     "@angular/build": "^20.1.3",
     "@angular/cli": "^20.1.3",
-    "@angular/compiler": "^20.1.3",
     "@angular/compiler-cli": "^20.1.0",
-    "@angular/platform-browser": "^20.1.3",
-    "@angular/platform-browser-dynamic": "^20.1.3",
-    "@chromatic-com/storybook": "^4.0.1",
-    "@compodoc/compodoc": "^1.1.26",
-    "@storybook/addon-a11y": "^9.0.18",
-    "@storybook/addon-coverage": "^2.0.0",
-    "@storybook/addon-docs": "^9.0.18",
-    "@storybook/angular": "^9.0.18",
-    "@storybook/test-runner": "^0.23.0",
-    "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
-    "@types/node": "^20.19.9",
-    "angular-eslint": "20.1.1",
-    "eslint": "^9.29.0",
-    "eslint-plugin-storybook": "^9.0.18",
     "jasmine-core": "~5.8.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "ng-packagr": "^20.1.0",
-    "storybook": "^9.0.18",
-    "typescript": "~5.8.2",
-    "typescript-eslint": "8.34.1",
-    "undici-types": "^7.12.0",
-    "zone.js": "^0.15.1"
-  },
-  "eslintConfig": {
-    "extends": [
-      "plugin:storybook/recommended"
-    ]
+    "typescript": "~5.8.2"
   }
 }
