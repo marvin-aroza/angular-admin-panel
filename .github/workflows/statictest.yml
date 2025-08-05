@@ -22,11 +22,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Build and deploy job
-  deploy:
+  # Build from develop branch and deploy to gh-pages branch
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout develop branch
         uses: actions/checkout@v4
         
       - name: Set up Node.js
@@ -41,11 +41,21 @@ jobs:
       - name: Install Angular CLI
         run: npm install -g @angular/cli
         
-      - name: Build Angular application
-        run: npm run build
+      - name: Build Angular application from develop branch
+        run: npm run build -- --base-href=/angular-admin-panel/
         
-      - name: Deploy to GitHub Pages
+      - name: Verify build output
+        run: |
+          echo "Checking build output..."
+          ls -la dist/
+          ls -la dist/angular-admin-panel/browser/ || echo "Browser folder not found"
+          echo "Checking index.html for base href..."
+          cat dist/angular-admin-panel/browser/index.html | grep -i "base href" || echo "Base href not found"
+        
+      - name: Copy dist/browser content to gh-pages branch and publish
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist/angular-admin-panel/browser
+          publish_branch: gh-pages
+          force_orphan: true
