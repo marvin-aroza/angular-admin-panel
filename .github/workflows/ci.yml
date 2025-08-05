@@ -7,9 +7,11 @@ on:
     branches: [ main, develop ]
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   pull-requests: write
+  pages: write
+  id-token: write
 
 jobs:
   install:
@@ -380,3 +382,65 @@ jobs:
         path: |
           coverage/
         retention-days: 7
+
+  release:
+    name: Release & Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [install, build, audit, test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout main branch
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22.x
+        cache: 'npm'
+
+    - name: Restore node modules
+      uses: actions/cache@v4
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-22-
+
+    - name: Install dependencies (fallback)
+      run: npm ci
+
+    - name: Install Angular CLI
+      run: npm install -g @angular/cli
+
+    - name: Build Angular application for production
+      run: npm run build -- --base-href=/angular-admin-panel/
+
+    - name: Verify build output
+      run: |
+        echo "Checking build output..."
+        ls -la dist/
+        ls -la dist/angular-admin-panel/browser/ || echo "Browser folder not found"
+        echo "Checking index.html for base href..."
+        cat dist/angular-admin-panel/browser/index.html | grep -i "base href" || echo "Base href not found"
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist/angular-admin-panel/browser
+        publish_branch: gh-pages
+        force_orphan: true
+
+    - name: Create Release Summary
+      run: |
+        echo "🚀 **Release Summary**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Build:** Successful" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Tests:** Passed" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Security Audit:** Completed" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Deployment:** GitHub Pages" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🌐 **Live Site:** https://marvin-aroza.github.io/angular-admin-panel/" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📅 **Deploy Time:** $(date)" >> $GITHUB_STEP_SUMMARY
