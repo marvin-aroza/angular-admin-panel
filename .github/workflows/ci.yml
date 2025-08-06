@@ -30,16 +30,20 @@ jobs:
 
     - name: Install dependencies
       run: |
-        npm ci
+        # Remove lock file to resolve version conflicts
+        rm -f package-lock.json
+        npm install
         npm ls || true
 
-    - name: Cache node modules
+    - name: Cache node modules and package-lock
       uses: actions/cache@v4
       with:
-        path: node_modules
-        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        path: |
+          node_modules
+          package-lock.json
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-${{ github.run_id }}
         restore-keys: |
-          ${{ runner.os }}-node-22-
+          ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-
 
   audit:
     name: Security Audit
@@ -56,16 +60,25 @@ jobs:
         node-version: 22.x
         cache: 'npm'
 
-    - name: Restore node modules
+    - name: Restore node modules and package-lock
       uses: actions/cache@v4
       with:
-        path: node_modules
-        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        path: |
+          node_modules
+          package-lock.json
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-${{ github.run_id }}
         restore-keys: |
-          ${{ runner.os }}-node-22-
+          ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-
 
     - name: Install dependencies (fallback)
-      run: npm ci
+      run: |
+        if [ ! -f "package-lock.json" ] || [ ! -d "node_modules" ]; then
+          echo "Cache miss or incomplete - installing dependencies..."
+          rm -f package-lock.json
+          npm install
+        else
+          echo "Using cached dependencies"
+        fi
 
     - name: Run security audit
       run: |
@@ -98,16 +111,25 @@ jobs:
         node-version: 22.x
         cache: 'npm'
 
-    - name: Restore node modules
+    - name: Restore node modules and package-lock
       uses: actions/cache@v4
       with:
-        path: node_modules
-        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        path: |
+          node_modules
+          package-lock.json
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-${{ github.run_id }}
         restore-keys: |
-          ${{ runner.os }}-node-22-
+          ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-
 
     - name: Install dependencies (fallback)
-      run: npm ci
+      run: |
+        if [ ! -f "package-lock.json" ] || [ ! -d "node_modules" ]; then
+          echo "Cache miss or incomplete - installing dependencies..."
+          rm -f package-lock.json
+          npm install
+        else
+          echo "Using cached dependencies"
+        fi
 
     - name: Build application
       run: |
@@ -139,16 +161,25 @@ jobs:
     - name: Install Chrome
       uses: browser-actions/setup-chrome@v1
 
-    - name: Restore node modules
+    - name: Restore node modules and package-lock
       uses: actions/cache@v4
       with:
-        path: node_modules
-        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        path: |
+          node_modules
+          package-lock.json
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-${{ github.run_id }}
         restore-keys: |
-          ${{ runner.os }}-node-22-
+          ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-
 
     - name: Install dependencies (fallback)
-      run: npm ci
+      run: |
+        if [ ! -f "package-lock.json" ] || [ ! -d "node_modules" ]; then
+          echo "Cache miss or incomplete - installing dependencies..."
+          rm -f package-lock.json
+          npm install
+        else
+          echo "Using cached dependencies"
+        fi
 
     - name: Install additional dependencies for testing
       run: |
@@ -399,16 +430,25 @@ jobs:
         node-version: 22.x
         cache: 'npm'
 
-    - name: Restore node modules
+    - name: Restore node modules and package-lock
       uses: actions/cache@v4
       with:
-        path: node_modules
-        key: ${{ runner.os }}-node-22-${{ hashFiles('package-lock.json') }}
+        path: |
+          node_modules
+          package-lock.json
+        key: ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-${{ github.run_id }}
         restore-keys: |
-          ${{ runner.os }}-node-22-
+          ${{ runner.os }}-node-22-${{ hashFiles('package.json') }}-
 
     - name: Install dependencies (fallback)
-      run: npm ci
+      run: |
+        if [ ! -f "package-lock.json" ] || [ ! -d "node_modules" ]; then
+          echo "Cache miss or incomplete - installing dependencies..."
+          rm -f package-lock.json
+          npm install
+        else
+          echo "Using cached dependencies"
+        fi
 
     - name: Install Angular CLI
       run: npm install -g @angular/cli
