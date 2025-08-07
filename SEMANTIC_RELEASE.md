@@ -65,7 +65,7 @@ When merged to `main`:
 2. 📦 **Determines version** based on commit types
 3. 📝 **Generates CHANGELOG.md** 
 4. 🏷️ **Creates Git tag** (e.g., `v1.2.0`)
-5. 🚀 **Creates GitHub Release** with Angular build artifacts
+5. 🚀 **Creates GitHub Release** with changelog and release notes
 6. 💻 **Updates package.json** version
 7. 🌐 **Deploys Angular app to GitHub Pages**
 8. 🔄 **Reverse merges** changes back to `develop`
