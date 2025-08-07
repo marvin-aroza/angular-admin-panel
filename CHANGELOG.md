@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.1.0...v1.2.0) (2025-08-07)
+
+### 🚀 Features
+
+* **AAP7:** fix semantic release reverse merge ([7b9b11b](https://github.com/marvin-aroza/angular-admin-panel/commit/7b9b11bfc5ad2c11cfc6b098c714ef0e5769e96b))
+
 ## [1.1.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.0.0...v1.1.0) (2025-08-07)
 
 ### 🚀 Features
