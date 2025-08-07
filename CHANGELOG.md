@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.0.0...v1.1.0) (2025-08-07)
+
+### 🚀 Features
+
+* **AAP7:** fix for semantic release ([f012797](https://github.com/marvin-aroza/angular-admin-panel/commit/f012797c1150c833a0e60bced064d2cf6a699c02))
+
 ## 1.0.0 (2025-08-07)
 
 ### 🚀 Features
