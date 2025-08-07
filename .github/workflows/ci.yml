@@ -512,10 +512,10 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-    - name: Checkout develop branch
+    - name: Checkout main branch
       uses: actions/checkout@v4
       with:
-        ref: develop
+        ref: main
         fetch-depth: 0
         token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -524,23 +524,69 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Merge main into develop
+    - name: Create reverse merge branch
       run: |
-        echo "🔄 Merging main branch changes back to develop..."
-        git fetch origin main
-        git merge origin/main --no-edit
+        # Create a new branch for the reverse merge
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        BRANCH_NAME="reverse-merge/main-to-develop-${TIMESTAMP}"
         
-        echo "📤 Pushing updated develop branch..."
-        git push origin develop
+        echo "🔄 Creating reverse merge branch: $BRANCH_NAME"
+        git checkout -b $BRANCH_NAME
         
-        echo "✅ Successfully merged main changes into develop"
+        echo "📤 Pushing reverse merge branch..."
+        git push origin $BRANCH_NAME
+        
+        echo "MERGE_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+
+    - name: Create Pull Request for Reverse Merge
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { data: pullRequest } = await github.rest.pulls.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🔄 Reverse Merge: Sync main changes to develop',
+            head: process.env.MERGE_BRANCH,
+            base: 'develop',
+            body: `## 🔄 Automatic Reverse Merge
+            
+            This PR automatically syncs the latest release changes from \`main\` back to \`develop\`.
+            
+            ### � Changes Include:
+            - ✅ Version updates in package.json
+            - ✅ Updated CHANGELOG.md
+            - ✅ Release commit from semantic-release
+            
+            ### 🎯 Purpose:
+            Keep the \`develop\` branch in sync with the latest released version to ensure:
+            - Consistent version numbers across branches
+            - Up-to-date changelog for future development
+            - Clean git history
+            
+            **This PR can be safely merged automatically.**`,
+            maintainer_can_modify: true
+          });
+          
+          console.log(`Created pull request #${pullRequest.number}`);
+          
+          // Optionally auto-merge if you have auto-merge enabled
+          // await github.rest.pulls.merge({
+          //   owner: context.repo.owner,
+          //   repo: context.repo.repo,
+          //   pull_number: pullRequest.number,
+          //   commit_title: `🔄 Reverse merge main to develop`,
+          //   merge_method: 'merge'
+          // });
 
     - name: Create Reverse Merge Summary
       run: |
         echo "🔄 **Reverse Merge Summary**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "✅ **Main → Develop:** Completed" >> $GITHUB_STEP_SUMMARY
-        echo "📦 **Version Updates:** Synced to develop" >> $GITHUB_STEP_SUMMARY
-        echo "📝 **Changelog:** Updated in develop" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Branch Created:** $MERGE_BRANCH" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Pull Request:** Created for main → develop sync" >> $GITHUB_STEP_SUMMARY
+        echo "📦 **Version Updates:** Ready to sync to develop" >> $GITHUB_STEP_SUMMARY
+        echo "📝 **Changelog:** Updated and ready to merge" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "🎯 **Next Steps:** Continue development on develop branch" >> $GITHUB_STEP_SUMMARY
+        echo "🎯 **Next Steps:** Review and merge the reverse merge PR" >> $GITHUB_STEP_SUMMARY
+        echo "⚠️ **Note:** Develop branch is protected - PR created instead of direct push" >> $GITHUB_STEP_SUMMARY

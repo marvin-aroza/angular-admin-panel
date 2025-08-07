@@ -68,7 +68,26 @@ When merged to `main`:
 5. 🚀 **Creates GitHub Release** with changelog and release notes
 6. 💻 **Updates package.json** version
 7. 🌐 **Deploys Angular app to GitHub Pages**
-8. 🔄 **Reverse merges** changes back to `develop`
+8. 🔄 **Creates reverse merge PR** to sync changes back to `develop`
+
+## 🔄 Reverse Merge Process
+
+After a successful release, the workflow automatically:
+
+1. **Creates Reverse Merge Branch**: Creates a timestamped branch with main's changes
+2. **Opens Pull Request**: Creates a PR to merge main changes back to develop  
+3. **Handles Protected Branches**: Works with branch protection rules
+4. **Maintains Clean History**: Preserves git history and ensures develop stays current
+
+### Manual Steps Required
+
+Since the `develop` branch is protected:
+
+1. **Review the PR**: Check the automatically created reverse merge PR
+2. **Merge the PR**: Approve and merge to sync develop with the latest release
+3. **Continue Development**: All new features should branch from the updated develop
+
+This ensures develop always has the latest version numbers and changelog updates.
 
 ## 📊 Release Examples
 
