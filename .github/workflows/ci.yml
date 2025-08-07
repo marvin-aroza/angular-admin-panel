@@ -474,6 +474,11 @@ jobs:
         echo "🚀 Running semantic release..."
         npm run semantic-release
 
+    - name: Pull semantic-release changes
+      run: |
+        echo "📥 Pulling semantic-release commits..."
+        git pull origin main
+
     - name: Get the new version
       id: version
       run: |
@@ -517,7 +522,7 @@ jobs:
       with:
         ref: main
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.PAT_TOKEN }}  # Use PAT instead of GITHUB_TOKEN
 
     - name: Configure Git
       run: |
@@ -538,24 +543,26 @@ jobs:
         
         echo "MERGE_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
 
-    - name: Create GitHub Issue for Manual PR
+    - name: Create Pull Request for Reverse Merge
       uses: actions/github-script@v7
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.PAT_TOKEN }}  # Use PAT for protected branch access
         script: |
-          const { data: pullRequest } = await github.rest.issues.create({
+          const branchName = process.env.MERGE_BRANCH;
+          
+          const { data: pullRequest } = await github.rest.pulls.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
             title: '🔄 Reverse Merge: Sync main changes to develop',
-            head: process.env.MERGE_BRANCH,
+            head: branchName,
             base: 'develop',
             body: `## 🔄 Automatic Reverse Merge
             
             This PR automatically syncs the latest release changes from \`main\` back to \`develop\`.
             
             ### � Changes Include:
-            - ✅ Version updates in package.json
-            - ✅ Updated CHANGELOG.md
+            - ✅ Updated package.json version
+            - ✅ Updated CHANGELOG.md  
             - ✅ Release commit from semantic-release
             
             ### 🎯 Purpose:
@@ -568,14 +575,22 @@ jobs:
             maintainer_can_modify: true
           });
           
-          console.log(`Created pull request #${pullRequest.number}`);
+          console.log(\`Created pull request #\${pullRequest.number}\`);
           
-          // Optionally auto-merge if you have auto-merge enabled
+          // Optional: Auto-approve the PR if you want full automation
+          // await github.rest.pulls.createReview({
+          //   owner: context.repo.owner,
+          //   repo: context.repo.repo,
+          //   pull_number: pullRequest.number,
+          //   event: 'APPROVE'
+          // });
+          
+          // Optional: Auto-merge the PR (requires auto-merge to be enabled)
           // await github.rest.pulls.merge({
           //   owner: context.repo.owner,
           //   repo: context.repo.repo,
           //   pull_number: pullRequest.number,
-          //   commit_title: `🔄 Reverse merge main to develop`,
+          //   commit_title: \`🔄 Reverse merge main to develop\`,
           //   merge_method: 'merge'
           // });
 
@@ -584,9 +599,9 @@ jobs:
         echo "🔄 **Reverse Merge Summary**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "✅ **Branch Created:** $MERGE_BRANCH" >> $GITHUB_STEP_SUMMARY
-        echo "✅ **Pull Request:** Created for main → develop sync" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Pull Request:** Created automatically for main → develop sync" >> $GITHUB_STEP_SUMMARY
         echo "📦 **Version Updates:** Ready to sync to develop" >> $GITHUB_STEP_SUMMARY
         echo "📝 **Changelog:** Updated and ready to merge" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "🎯 **Next Steps:** Review and merge the reverse merge PR" >> $GITHUB_STEP_SUMMARY
-        echo "⚠️ **Note:** Develop branch is protected - PR created instead of direct push" >> $GITHUB_STEP_SUMMARY
+        echo "🔑 **Note:** Using PAT token to bypass protected branch restrictions" >> $GITHUB_STEP_SUMMARY
