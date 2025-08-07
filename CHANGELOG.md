@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.4.0...v1.5.0) (2025-08-07)
+
+### 🚀 Features
+
+* **AAP7:** reverse merge fix with pat ([d875147](https://github.com/marvin-aroza/angular-admin-panel/commit/d875147e5961798c97c89b26bdc9e7435b74e745))
+
 ## [1.4.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.3.0...v1.4.0) (2025-08-07)
 
 ### 🚀 Features
