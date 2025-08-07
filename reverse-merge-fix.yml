@@ -1,0 +1,21 @@
+    - name: Create GitHub Issue for Manual PR
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const branchName = process.env.MERGE_BRANCH;
+          const prUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/compare/develop...${branchName}?expand=1&title=🔄%20Reverse%20Merge:%20Sync%20main%20changes%20to%20develop&body=##%20🔄%20Automatic%20Reverse%20Merge%0A%0AThis%20PR%20syncs%20the%20latest%20release%20changes%20from%20main%20to%20develop.%0A%0A**This%20PR%20can%20be%20safely%20merged.**`;
+          
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🔄 Action Required: Create Reverse Merge PR',
+            body: `A reverse merge branch \`${branchName}\` has been created.
+            
+            **[Click here to create the PR →](${prUrl})**
+            
+            After creating the PR, review and merge it to sync develop with the latest release.`,
+            labels: ['maintenance', 'reverse-merge']
+          });
+          
+          console.log('Created issue with PR creation link');
