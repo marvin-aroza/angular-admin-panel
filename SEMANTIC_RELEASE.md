@@ -64,10 +64,11 @@ When merged to `main`:
 1. ✅ **Semantic Release** analyzes commits since last release
 2. 📦 **Determines version** based on commit types
 3. 📝 **Generates CHANGELOG.md** 
-4. 🏷️ **Creates Git tag** (e.g., `v1.2.0`)
-5. 🚀 **Creates GitHub Release** with changelog and release notes
-6. 💻 **Updates package.json** version
-7. 🌐 **Deploys Angular app to GitHub Pages**
+4. 📦 **Updates package.json version** using @semantic-release/npm plugin
+5. 🏷️ **Creates Git tag** (e.g., `v1.2.0`)
+6. 🚀 **Creates GitHub Release** with changelog and release notes
+7. 💻 **Commits version changes** to package.json and CHANGELOG.md
+8. 🌐 **Deploys Angular app to GitHub Pages**
 8. 🔄 **Creates reverse merge PR** to sync changes back to `develop`
 
 ## 🔄 Reverse Merge Process
