@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.3.0...v1.4.0) (2025-08-07)
+
+### 🚀 Features
+
+* **AAP7:** test package json version update ([1fb433c](https://github.com/marvin-aroza/angular-admin-panel/commit/1fb433c9623ba3920d155591c12dc95d3677287a))
+
 ## [1.3.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.2.0...v1.3.0) (2025-08-07)
 
 ### 🚀 Features
