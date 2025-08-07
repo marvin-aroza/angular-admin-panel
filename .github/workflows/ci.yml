@@ -570,15 +570,15 @@ jobs:
             base: 'develop',
             body: `## 🔄 Automatic Reverse Merge
             
-            This PR automatically syncs the latest release changes from \`main\` back to \`develop\`.
+            This PR automatically syncs the latest release changes from main back to develop.
             
-            ### � Changes Include:
+            ### 📋 Changes Include:
             - ✅ Updated package.json version
             - ✅ Updated CHANGELOG.md  
             - ✅ Release commit from semantic-release
             
             ### 🎯 Purpose:
-            Keep the \`develop\` branch in sync with the latest released version to ensure:
+            Keep the develop branch in sync with the latest released version to ensure:
             - Consistent version numbers across branches
             - Up-to-date changelog for future development
             - Clean git history
@@ -587,7 +587,7 @@ jobs:
             maintainer_can_modify: true
           });
           
-          console.log(\`Created pull request #\${pullRequest.number}\`);
+          console.log(`Created pull request #${pullRequest.number}`);
           
           // Optional: Auto-approve the PR if you want full automation
           // await github.rest.pulls.createReview({
@@ -602,7 +602,7 @@ jobs:
           //   owner: context.repo.owner,
           //   repo: context.repo.repo,
           //   pull_number: pullRequest.number,
-          //   commit_title: \`🔄 Reverse merge main to develop\`,
+          //   commit_title: `🔄 Reverse merge main to develop`,
           //   merge_method: 'merge'
           // });
 
