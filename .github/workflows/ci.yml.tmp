@@ -543,7 +543,7 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const { data: pullRequest } = await github.rest.issues.create({
+          const { data: pullRequest } = await github.rest.pulls.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
             title: '🔄 Reverse Merge: Sync main changes to develop',
