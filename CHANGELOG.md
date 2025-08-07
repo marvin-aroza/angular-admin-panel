@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.6.0...v1.7.0) (2025-08-07)
+
+### 🚀 Features
+
+* **AAP7:** debug reverse merge issue ([9b8e69f](https://github.com/marvin-aroza/angular-admin-panel/commit/9b8e69fc93754b2cb8641c7a65ebf46c22e81b0e))
+
 ## [1.6.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.5.0...v1.6.0) (2025-08-07)
 
 ### 🚀 Features
