@@ -415,7 +415,7 @@ jobs:
         retention-days: 7
 
   release:
-    name: Release & Deploy to GitHub Pages
+    name: Semantic Release & Deploy
     runs-on: ubuntu-latest
     needs: [install, build, audit, test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -423,6 +423,9 @@ jobs:
     steps:
     - name: Checkout main branch
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Node.js 22.x
       uses: actions/setup-node@v4
@@ -464,6 +467,20 @@ jobs:
         echo "Checking index.html for base href..."
         cat dist/angular-admin-panel/browser/index.html | grep -i "base href" || echo "Base href not found"
 
+    - name: Run Semantic Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "🚀 Running semantic release..."
+        npm run semantic-release
+
+    - name: Get the new version
+      id: version
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        echo "new_version=$VERSION" >> $GITHUB_OUTPUT
+        echo "📦 New version: $VERSION"
+
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v4
       with:
@@ -476,11 +493,54 @@ jobs:
       run: |
         echo "🚀 **Release Summary**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📦 **Version:** ${{ steps.version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
         echo "✅ **Build:** Successful" >> $GITHUB_STEP_SUMMARY
         echo "✅ **Tests:** Passed" >> $GITHUB_STEP_SUMMARY
         echo "✅ **Security Audit:** Completed" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Semantic Release:** Completed" >> $GITHUB_STEP_SUMMARY
         echo "✅ **Deployment:** GitHub Pages" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "🌐 **Live Site:** https://marvin-aroza.github.io/angular-admin-panel/" >> $GITHUB_STEP_SUMMARY
+        echo "🏷️ **GitHub Release:** https://github.com/marvin-aroza/angular-admin-panel/releases/tag/v${{ steps.version.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "📅 **Deploy Time:** $(date)" >> $GITHUB_STEP_SUMMARY
+
+  reverse-merge:
+    name: Reverse Merge to Develop
+    runs-on: ubuntu-latest
+    needs: [release]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout develop branch
+      uses: actions/checkout@v4
+      with:
+        ref: develop
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Merge main into develop
+      run: |
+        echo "🔄 Merging main branch changes back to develop..."
+        git fetch origin main
+        git merge origin/main --no-edit
+        
+        echo "📤 Pushing updated develop branch..."
+        git push origin develop
+        
+        echo "✅ Successfully merged main changes into develop"
+
+    - name: Create Reverse Merge Summary
+      run: |
+        echo "🔄 **Reverse Merge Summary**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ **Main → Develop:** Completed" >> $GITHUB_STEP_SUMMARY
+        echo "📦 **Version Updates:** Synced to develop" >> $GITHUB_STEP_SUMMARY
+        echo "📝 **Changelog:** Updated in develop" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "🎯 **Next Steps:** Continue development on develop branch" >> $GITHUB_STEP_SUMMARY
