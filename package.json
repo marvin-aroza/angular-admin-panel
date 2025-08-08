@@ -22,7 +22,7 @@
     ]
   },
   "overrides": {
-    "typescript": "5.8.3",
+    "typescript": "5.9.2",
     "tmp": "^0.2.4"
   },
   "private": true,
@@ -58,6 +58,6 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "semantic-release": "^24.2.7",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2"
   }
 }
