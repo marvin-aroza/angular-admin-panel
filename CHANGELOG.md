@@ -1,3 +1,9 @@
+## [1.9.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.8.0...v1.9.0) (2025-08-08)
+
+### 🚀 Features
+
+* **AAP7:** removed reverse merge step to develop ([3b92b36](https://github.com/marvin-aroza/angular-admin-panel/commit/3b92b3607ee1d53a05a4063762f6bd529efebe63))
+
 ## [1.8.0](https://github.com/marvin-aroza/angular-admin-panel/compare/v1.7.0...v1.8.0) (2025-08-07)
 
 ### 🚀 Features
