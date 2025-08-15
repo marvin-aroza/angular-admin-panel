@@ -16,7 +16,7 @@ Thank you for your interest in contributing to the Angular Admin Panel project! 
 
 Before you begin, ensure you have the following installed on your system:
 
-- **Node.js** (version 22 or higher)
+- **Node.js** (version 18 or 20 — align with package.json "engines" or Angular docs)
 - **npm** (comes with Node.js)
 - **Git**
 
@@ -80,9 +80,8 @@ npm run watch
 - Use reactive programming patterns with RxJS
 
 #### Code Formatting
-- The project uses Prettier for code formatting
-- Configuration is included in `package.json`
-- Code will be automatically formatted on commit using Husky hooks
+- We recommend using Prettier for code formatting; configuration is included in `package.json`.
+- If you install Prettier and configure Husky + lint-staged, commits can be auto-formatted. (This repository currently has Husky hooks but no hook that runs Prettier.)
 
 #### Testing Guidelines
 - Write unit tests for all new components and services
